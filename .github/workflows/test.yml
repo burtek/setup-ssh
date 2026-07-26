@@ -56,11 +56,16 @@ jobs:
       - name: Setup SSH
         uses: ./
         with:
+          alias: test
           host: localhost
           port: 2222
           user: test
           private_key: ${{ steps.keys.outputs.private_key }}
           test_connection: true
+
+      - name: SSH into testbox
+        shell: bash
+        run: ssh test "echo 'it works!'"
 
       - name: Cleanup
         if: always()
