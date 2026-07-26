@@ -1,0 +1,59 @@
+name: Test Action
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  integration:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Generate SSH keypair
+        id: keys
+        shell: bash
+        run: |
+          ssh-keygen -t ed25519 -N "" -f id_test
+          {
+            echo "private_key<<EOF"
+            cat id_test
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Start SSH server
+        shell: bash
+        run: |
+          docker run -d \
+            --name sshd \
+            -p 2222:2222 \
+            -e USER_NAME=test \
+            -e PUBLIC_KEY="$(cat id_test.pub)" \
+            lscr.io/linuxserver/openssh-server:latest
+
+      - name: Wait for SSH
+        shell: bash
+        run: |
+          for i in {1..30}; do
+            if nc -z localhost 2222; then
+              exit 0
+            fi
+            sleep 1
+          done
+
+          docker logs sshd
+          exit 1
+
+      - name: Setup SSH
+        uses: ./
+        with:
+          host: localhost
+          port: 2222
+          user: test
+          private_key: ${{ steps.keys.outputs.private_key }}
+          test_connection: true
+
+      - name: Cleanup
+        if: always()
+        run: docker rm -f sshd

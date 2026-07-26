@@ -1,0 +1,101 @@
+name: Setup SSH
+description: Configure SSH for subsequent workflow steps.
+
+inputs:
+  key_filename:
+    description: Filename of the private key stored in ~/.ssh
+    required: false
+    default: id_key
+  host:
+    description: SSH hostname or IP address
+    required: true
+  port:
+    description: SSH Port
+    required: false
+    default: 22
+  user:
+    description: SSH username
+    required: true
+  private_key:
+    description: Contents of the private SSH key
+    required: true
+  known_hosts:
+    description: known_hosts entry. Leave empty to generate automatically
+    required: false
+  strict_host_key_checking:
+    description: StrictHostKeyChecking value
+    required: false
+    default: "yes"
+  alias:
+    description: Host alias written to ~/.ssh/config
+    required: false
+    default: production
+  test_connection:
+    description: Run connection test after Setup
+    required: false
+    default: false
+
+runs:
+  using: composite
+
+  steps:
+    - name: Verify inputs
+      shell: bash
+      run: |
+        key="$HOME/.ssh/${{ inputs.key_filename }}"
+
+        if [ -e "$key" ]; then
+          echo "::error::SSH key '$key' already exists."
+          exit 1
+        fi
+
+        if grep -Eq "^Host[[:space:]]+${{ inputs.alias }}$" ~/.ssh/config 2>/dev/null; then
+          echo "::error::Host alias already exists."
+          exit 1
+        fi
+
+    - name: Setup SSH
+      shell: bash
+      run: |
+        set -euo pipefail
+
+        mkdir -p ~/.ssh
+        chmod 700 ~/.ssh
+
+        printf '%s\n' '${{ inputs.private_key }}' > ~/.ssh/${{ inputs.key_filename }}
+        chmod 600 ~/.ssh/${{ inputs.key_filename }}
+        ssh-keygen -lf ~/.ssh/${{ inputs.key_filename }} || {
+          echo "::error::Invalid private key."
+          exit 1
+        }
+
+        if [ -n '${{ inputs.known_hosts }}' ]; then
+          printf '%s\n' '${{ inputs.known_hosts }}' > ~/.ssh/known_hosts
+        else
+          known_hosts="$(ssh-keyscan -H -p '${{ inputs.port }}' '${{ inputs.host }}')"
+
+          if [ -z "$known_hosts" ]; then
+            echo "::error::Failed to obtain host key."
+            exit 1
+          fi
+
+          printf '%s\n' "$known_hosts" >> ~/.ssh/known_hosts
+        fi
+
+        chmod 644 ~/.ssh/known_hosts
+
+        cat >> ~/.ssh/config <<EOF
+        Host ${{ inputs.alias }}
+            HostName ${{ inputs.host }}
+            Port ${{ inputs.port }}
+            User ${{ inputs.user }}
+            IdentityFile ~/.ssh/${{ inputs.key_filename }}
+            StrictHostKeyChecking ${{ inputs.strict_host_key_checking }}
+        EOF
+
+        chmod 600 ~/.ssh/config
+    
+    - name: Test connection
+      if: inputs.test_connection == 'true'
+      shell: bash
+      run: ssh ${{ inputs.alias }} 'echo "Connection tested successfully"'
