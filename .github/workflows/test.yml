@@ -44,23 +44,31 @@ jobs:
         shell: bash
         run: |
           for _ in $(seq 30); do
-            if nc -z localhost 2222; then
+            if ssh-keyscan -T 2 -p 2222 localhost >/dev/null 2>&1; then
+              docker logs sshd
               exit 0
             fi
             sleep 1
           done
-
-          docker logs sshd
           exit 1
 
       - name: Setup SSH
         uses: ./
         with:
+          alias: test
           host: localhost
           port: 2222
           user: test
           private_key: ${{ steps.keys.outputs.private_key }}
           test_connection: true
+
+      - name: SSH into testbox
+        shell: bash
+        run: ssh test "echo 'it works!'"
+
+      - name: Show SSH logs
+        if: always()
+        run: docker logs sshd
 
       - name: Cleanup
         if: always()
