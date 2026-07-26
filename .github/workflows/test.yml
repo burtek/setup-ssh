@@ -5,6 +5,14 @@ on:
   pull_request:
 
 jobs:
+  actionlint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: raven-actions/actionlint@v2
+
   integration:
     runs-on: ubuntu-latest
 
