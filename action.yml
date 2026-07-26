@@ -1,5 +1,8 @@
-name: Setup SSH
-description: Configure SSH for subsequent workflow steps.
+name: Setup SSH Config file
+description: Configure SSH for subsequent workflow steps
+branding:
+  icon: terminal
+  color: blue
 
 inputs:
   key_filename:
