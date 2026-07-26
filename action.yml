@@ -104,4 +104,4 @@ runs:
     - name: Test connection
       if: inputs.test_connection == 'true'
       shell: bash
-      run: ssh ${{ inputs.alias }} 'echo "Connection tested successfully"'
+      run: ssh -vvv ${{ inputs.alias }} 'echo "Connection tested successfully"'
