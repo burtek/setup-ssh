@@ -1,4 +1,4 @@
-# Setup SSH
+# Setup SSH Config file
 
 Configure SSH for subsequent GitHub Actions workflow steps.
 
