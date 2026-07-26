@@ -36,7 +36,7 @@ inputs:
   test_connection:
     description: Run connection test after Setup
     required: false
-    default: false
+    default: 'false'
 
 runs:
   using: composite
@@ -78,7 +78,7 @@ runs:
         if [ -n '${{ inputs.known_hosts }}' ]; then
           printf '%s\n' '${{ inputs.known_hosts }}' > ~/.ssh/known_hosts
         else
-          known_hosts="$(ssh-keyscan -v -H -p '${{ inputs.port }}' '${{ inputs.host }}')"
+          known_hosts="$(ssh-keyscan -H -p '${{ inputs.port }}' '${{ inputs.host }}')"
 
           if [ -z "$known_hosts" ]; then
             echo "::error::Failed to obtain host key."
@@ -100,8 +100,8 @@ runs:
         EOF
 
         chmod 600 ~/.ssh/config
-    
+
     - name: Test connection
       if: inputs.test_connection == 'true'
       shell: bash
-      run: ssh -vvv ${{ inputs.alias }} 'echo "Connection tested successfully"'
+      run: ssh ${{ inputs.alias }} 'echo "Connection tested successfully"'

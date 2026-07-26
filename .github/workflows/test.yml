@@ -64,7 +64,7 @@ jobs:
 
       - name: SSH into testbox
         shell: bash
-        run: ssh -vvv test "echo 'it works!'"
+        run: ssh test "echo 'it works!'"
 
       - name: Show SSH logs
         if: always()
