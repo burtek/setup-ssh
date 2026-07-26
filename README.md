@@ -15,7 +15,7 @@ The action:
 
 ```yaml
 - name: Setup SSH
-  uses: dotryw/setup-ssh@v1
+  uses: burtek/setup-ssh@v1
   with:
     host: ${{ secrets.SSH_HOST }}
     port: ${{ secrets.SSH_PORT }}
@@ -48,7 +48,7 @@ The action:
 ## Example: Multiple hosts
 
 ```yaml
-- uses: dotryw/setup-ssh@v1
+- uses: burtek/setup-ssh@v1
   with:
     alias: production
     key_filename: production_key
@@ -56,7 +56,7 @@ The action:
     user: deploy
     private_key: ${{ secrets.PRODUCTION_KEY }}
 
-- uses: dotryw/setup-ssh@v1
+- uses: burtek/setup-ssh@v1
   with:
     alias: backup
     key_filename: backup_key
