@@ -49,8 +49,6 @@ jobs:
             fi
             sleep 1
           done
-
-          docker logs sshd
           exit 1
 
       - name: Setup SSH
@@ -66,6 +64,10 @@ jobs:
       - name: SSH into testbox
         shell: bash
         run: ssh test "echo 'it works!'"
+
+      - name: Show SSH logs
+        if: always()
+        run: docker logs sshd
 
       - name: Cleanup
         if: always()
