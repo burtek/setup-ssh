@@ -45,6 +45,7 @@ runs:
     - name: Verify inputs
       shell: bash
       run: |
+        # Verifying inputs...
         key="$HOME/.ssh/${{ inputs.key_filename }}"
 
         if [ -e "$key" ]; then
@@ -60,6 +61,7 @@ runs:
     - name: Setup SSH
       shell: bash
       run: |
+        # Setting up SSH...
         set -euo pipefail
 
         mkdir -p ~/.ssh
@@ -67,7 +69,8 @@ runs:
 
         printf '%s\n' '${{ inputs.private_key }}' > ~/.ssh/${{ inputs.key_filename }}
         chmod 600 ~/.ssh/${{ inputs.key_filename }}
-        ssh-keygen -lf ~/.ssh/${{ inputs.key_filename }} || {
+        echo "Public key for the provided key:"
+        ssh-keygen -lf ~/.ssh/${{ inputs.key_filename }} > /dev/null || {
           echo "::error::Invalid private key."
           exit 1
         }
